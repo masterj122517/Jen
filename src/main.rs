@@ -57,6 +57,16 @@ fn main() {
 fn read_password() -> Vec<u8> {
     eprint!("password: ");
     let _ = io::stderr().flush();
+
+    // 如果 stdin 不是 TTY（比如从程序管道输入），就读一行
+    if !atty::is(atty::Stream::Stdin) {
+        let mut input = String::new();
+        if io::stdin().read_line(&mut input).is_ok() {
+            return input.trim_end().as_bytes().to_vec();
+        }
+        return Vec::new();
+    }
+
     match rpassword::read_password() {
         Ok(input) => input.trim_end().as_bytes().to_vec(),
         Err(_) => Vec::new(),
